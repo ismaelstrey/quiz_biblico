@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-push checks..."
+
+# Run integration tests
+echo "Running integration tests..."
+npm run test:integration
+
+if [ $? -ne 0 ]; then
+    echo "❌ Integration tests failed. Push aborted."
+    exit 1
+fi
+
+# Run build to ensure everything compiles
+echo "Building project..."
+npm run build
+
+if [ $? -ne 0 ]; then
+    echo "❌ Build failed. Push aborted."
+    exit 1
+fi
+
+echo "✅ All pre-push checks passed!"

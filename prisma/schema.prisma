@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String   // Hash da senha
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  quizAttempts QuizAttempt[]
+  userProgress UserProgress[]
+
+  @@map("users")
+}
+
+model Level {
+  id          String @id @default(cuid())
+  name        String
+  description String?
+  difficulty  Int    // 1-5 (1=Iniciante, 5=Expert)
+  minScore    Int    // Pontuação mínima para desbloquear
+  
+  // Relacionamentos
+  quizzes Quiz[]
+  userProgress UserProgress[]
+  
+  @@map("levels")
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  levelId     String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relacionamentos
+  level     Level        @relation(fields: [levelId], references: [id])
+  questions Question[]
+  attempts  QuizAttempt[]
+  
+  @@map("quizzes")
+}
+
+model Question {
+  id            String      @id @default(cuid())
+  quizId        String
+  questionText  String
+  questionType  QuestionType @default(MULTIPLE_CHOICE)
+  difficulty    Int         // 1-5
+  bibleVerse    String?     // Referência bíblica
+  explanation   String?     // Explicação da resposta
+  createdAt     DateTime    @default(now())
+  
+  // Relacionamentos
+  quiz    Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  answers Answer[]
+  
+  @@map("questions")
+}
+
+model Answer {
+  id         String  @id @default(cuid())
+  questionId String
+  answerText String
+  isCorrect  Boolean @default(false)
+  
+  // Relacionamentos
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  @@map("answers")
+}
+
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  userId      String
+  quizId      String
+  score       Int
+  totalQuestions Int
+  correctAnswers Int
+  timeSpent   Int      // em segundos
+  completedAt DateTime @default(now())
+  
+  // Relacionamentos
+  user User @relation(fields: [userId], references: [id])
+  quiz Quiz @relation(fields: [quizId], references: [id])
+  
+  @@map("quiz_attempts")
+}
+
+model UserProgress {
+  id            String   @id @default(cuid())
+  userId        String
+  levelId       String
+  bestScore     Int      @default(0)
+  bestPercentage Float   @default(0)
+  isUnlocked    Boolean  @default(false)
+  attemptsCount Int      @default(0)
+  lastAttemptAt DateTime @default(now())
+  
+  // Relacionamentos
+  user  User  @relation(fields: [userId], references: [id])
+  level Level @relation(fields: [levelId], references: [id])
+  
+  @@unique([userId, levelId])
+  @@map("user_progress")
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  FILL_BLANK
+}
