@@ -14,7 +14,7 @@ Este diretório contém os workflows do GitHub Actions para o projeto Bible Quiz
 
 #### Test Job
 - **Matrix Strategy:** Node.js 18.x e 20.x
-- **Database:** PostgreSQL 15 (via Docker service)
+- **Database:** SQLite (file-based, no external service needed)
 - **Steps:**
   1. Checkout do código
   2. Setup do Node.js
@@ -67,7 +67,12 @@ Este diretório contém os workflows do GitHub Actions para o projeto Bible Quiz
 ### Variáveis de Ambiente Necessárias
 
 ```env
-DATABASE_URL=postgresql://user:password@host:port/database
+# Para desenvolvimento/teste (SQLite)
+DATABASE_URL=file:./dev.db
+
+# Para produção (PostgreSQL)
+# DATABASE_URL=postgresql://user:password@host:port/database
+
 NEXTAUTH_SECRET=your-secret-key
 NEXTAUTH_URL=http://localhost:3000
 NODE_ENV=production
