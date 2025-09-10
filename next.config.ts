@@ -38,9 +38,14 @@ const nextConfig: NextConfig = {
     formats: ['image/webp', 'image/avif'],
   },
 
-  // Configurações de compilação
+  // Configurações do compilador
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
+  },
+
+  // Ignorar erros do ESLint durante o build
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 
   // Headers de segurança

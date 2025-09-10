@@ -1,12 +1,13 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import LoginPage from '../app/login/page';
 import { useFormValidation } from '../hooks/useFormValidation';
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
+  useSearchParams: jest.fn(),
 }));
 
 // Mock useFormValidation hook
@@ -21,6 +22,9 @@ global.fetch = jest.fn();
 const mockPush = jest.fn();
 const mockRefresh = jest.fn();
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
+const mockUseSearchParams = useSearchParams as jest.MockedFunction<
+  typeof useSearchParams
+>;
 const mockUseFormValidation = useFormValidation as jest.MockedFunction<
   typeof useFormValidation
 >;
@@ -35,6 +39,17 @@ describe('LoginPage', () => {
       forward: jest.fn(),
       prefetch: jest.fn(),
     });
+
+    mockUseSearchParams.mockReturnValue({
+      get: jest.fn().mockReturnValue(null),
+      has: jest.fn().mockReturnValue(false),
+      getAll: jest.fn().mockReturnValue([]),
+      keys: jest.fn().mockReturnValue([]),
+      values: jest.fn().mockReturnValue([]),
+      entries: jest.fn().mockReturnValue([]),
+      forEach: jest.fn(),
+      toString: jest.fn().mockReturnValue(''),
+    } as any);
 
     mockUseFormValidation.mockReturnValue({
       values: { email: '', password: '' },
@@ -56,7 +71,8 @@ describe('LoginPage', () => {
   it('should render login form', () => {
     render(<LoginPage />);
 
-    expect(screen.getByText('Entrar na sua conta')).toBeInTheDocument();
+    expect(screen.getByText('Bible Quiz App')).toBeInTheDocument();
+    expect(screen.getByText('Faça login para continuar')).toBeInTheDocument();
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
     expect(screen.getByLabelText('Senha')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Entrar' })).toBeInTheDocument();
@@ -172,8 +188,8 @@ describe('LoginPage', () => {
 
     render(<LoginPage />);
 
-    const submitButton = screen.getByRole('button', { name: /entrar/i });
-    fireEvent.click(submitButton);
+    const form = document.querySelector('form');
+    fireEvent.submit(form!);
     expect(mockHandleSubmit).toHaveBeenCalled();
   });
 

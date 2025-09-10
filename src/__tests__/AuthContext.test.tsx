@@ -54,10 +54,23 @@ describe('AuthContext', () => {
     });
   });
 
-  it('should provide initial state', () => {
+  it('should provide initial state', async () => {
+    // Mock the auth check to return no user
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+    });
+
     renderWithProvider();
 
-    expect(screen.getByTestId('loading')).toHaveTextContent('not-loading');
+    // Initially should be loading
+    expect(screen.getByTestId('loading')).toHaveTextContent('loading');
+
+    // Wait for the auth check to complete
+    await waitFor(() => {
+      expect(screen.getByTestId('loading')).toHaveTextContent('not-loading');
+    });
+
     expect(screen.getByTestId('authenticated')).toHaveTextContent(
       'not-authenticated'
     );

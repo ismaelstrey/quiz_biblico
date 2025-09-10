@@ -66,7 +66,7 @@ describe('Navigation', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('should show loading state', () => {
+  it('should render loading state correctly', () => {
     mockUseAuth.mockReturnValue({
       user: null,
       isAuthenticated: false,
@@ -79,8 +79,9 @@ describe('Navigation', () => {
 
     render(<Navigation />);
     expect(screen.getByText('Bible Quiz')).toBeInTheDocument();
-    // During loading state, the navigation still renders normally
-    expect(screen.getByText('Entrar')).toBeInTheDocument();
+    // During loading state, the login button is replaced with a loading skeleton
+    expect(screen.getByRole('navigation')).toBeInTheDocument();
+    expect(screen.queryByText('Entrar')).not.toBeInTheDocument();
   });
 
   it('should render login button when not authenticated', () => {
@@ -146,7 +147,7 @@ describe('Navigation', () => {
   });
 
   it('should handle logout click', async () => {
-    const mockLogout = jest.fn();
+    const mockLogout = jest.fn().mockResolvedValue(undefined);
     const mockUser = {
       id: '1',
       name: 'Test User',
@@ -172,7 +173,9 @@ describe('Navigation', () => {
     const logoutButtons = screen.getAllByText('🚪 Sair');
     fireEvent.click(logoutButtons[0]);
 
-    expect(mockLogout).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockLogout).toHaveBeenCalled();
+    });
   });
 
   it('should toggle mobile menu', () => {
